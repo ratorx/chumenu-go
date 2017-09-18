@@ -7,3 +7,4 @@
 
 # Server specific config
 *config.json
+env.sh
