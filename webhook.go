@@ -148,7 +148,7 @@ func mealMessage(sender string, prefix string, meal menus.Meal) {
 // Replace block with cache
 func menuMessage(sender string, isLunch bool, forceSend bool) {
 	currentTime := time.Now()
-	block, _ := menus.GetData(uint8(currentTime.Weekday()) + 1) // Normalise to UNIX days
+	block, _ := menus.GetData(uint8(currentTime.Weekday())) // Normalise to UNIX days
 	hour := currentTime.Hour()
 	minute := currentTime.Minute()
 
@@ -173,7 +173,7 @@ func menuMessage(sender string, isLunch bool, forceSend bool) {
 		}
 	}
 
-	if meal.String() != " - TBC" || forceSend {
+	if forceSend || meal.String() != " - TBC" {
 		mealMessage(sender, prefix, meal)
 	}
 }
