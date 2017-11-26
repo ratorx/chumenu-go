@@ -60,7 +60,7 @@ func handler(response http.ResponseWriter, request *http.Request) {
 		}
 
 		if !checkSHA(request.Header.Get("X-Hub-Signature"), body) {
-			log.Println("Invalid SHA1 key in header")
+			log.Println("checksum failed: checksum of body is invalid")
 			http.Error(response, "SHA1 validation failed", http.StatusUnauthorized)
 			return
 		}
@@ -83,8 +83,6 @@ func getConfigValue(env string, def string) string {
 }
 
 func init() {
-	log.SetPrefix("chumenu: ")
-
 	cfg.appSecret = getConfigValue("FACEBOOK_APP_SECRET", "")
 	cfg.certPath = getConfigValue("SSL_CERT_PATH", "~/.config/chumenu/fullchain.pem")
 	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "~/.config/chumenu/privkey.pem")
@@ -127,6 +125,7 @@ func init() {
 }
 
 func main() {
+	log.SetFlags(0)
 	defer cfg.db.Close() // nolint: errcheck
 	// Cron Initialisation
 	go func() { <-gocron.Start() }()
