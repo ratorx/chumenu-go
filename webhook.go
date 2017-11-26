@@ -107,6 +107,7 @@ func parseMessage(sender string, text string) {
 
 	if !strings.HasPrefix(text, cfg.commandPrefix) {
 		defaultHandler(sender, text)
+		return
 	}
 
 	text = strings.TrimPrefix(text, cfg.commandPrefix)
