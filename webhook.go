@@ -102,12 +102,14 @@ func defaultHandler(sender, text string) {
 func parseMessage(sender string, text string) {
 
 	text = strings.TrimSpace(text)
-	text = strings.Trim(text, "*_`"+cfg.commandPrefix)
+	text = strings.Trim(text, "*_`")
 	text = strings.ToLower(text)
 
 	if !strings.HasPrefix(text, cfg.commandPrefix) {
 		defaultHandler(sender, text)
 	}
+
+	text = strings.TrimPrefix(text, cfg.commandPrefix)
 
 	switch text {
 	case "subscribe", "s":
