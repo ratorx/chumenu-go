@@ -2,38 +2,34 @@ package main
 
 import "crypto/hmac"
 import "crypto/sha1"
+import "encoding/hex"
 import "strconv"
-import "strings"
 
-var (
-	extraReplace = map[string]string{
-		"/": "\\/",
-		"<": "\\u003C",
-		"%": "\\u0025",
-		"@": "\\u0040",
+func asciiRune(r rune) string {
+	if r == '\\' {
+		return "\\"
 	}
-)
 
-func getASCII(r rune) string {
 	s := strconv.QuoteRuneToASCII(r)
 	return s[1 : len(s)-1]
 }
 
-func facebookStr(str string) (ret string) {
-	for _, r := range str {
-		ret += getASCII(r)
+func asciiString(b []byte) (ret string) {
+	for _, r := range string(b) {
+		ret += asciiRune(r)
 	}
-	for k, v := range extraReplace {
-		ret = strings.Replace(ret, k, v, -1)
-	}
+
 	return ret
 }
 
 func checkSHA(sha string, body []byte) bool {
-	expectedSum := []byte(facebookStr(sha[5:]))
+	expectedSum, err := hex.DecodeString(sha[5:])
+	if err != nil {
+		return false
+	}
 
 	mac := hmac.New(sha1.New, []byte(cfg.appSecret))
-	mac.Write(body)
+	mac.Write([]byte(asciiString(body)))
 	actualSum := mac.Sum(nil)
 
 	return hmac.Equal(expectedSum, actualSum)
