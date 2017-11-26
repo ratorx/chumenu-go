@@ -34,75 +34,94 @@ func textMessageWithLog(sender string, message string) {
 	}
 }
 
-func parseMessage(sender string, text string) {
+func subscribeHandler(sender string) {
 	s := []byte(sender)
+
+	err := cfg.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(cfg.userBucket))
+		if b == nil {
+			return fmt.Errorf("database corrupted: bucket %v not found", cfg.userBucket)
+		}
+
+		v := b.Get(s)
+		if v != nil {
+			go textMessageWithLog(sender, subscribeFail)
+			return nil
+		}
+
+		err := b.Put(s, []byte{})
+		if err != nil {
+			go textMessageWithLog(sender, unexpected)
+			return err
+		}
+		go textMessageWithLog(sender, subscribeSuccess)
+
+		return nil
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+
+}
+
+func unsubscribeHandler(sender string) {
+	s := []byte(sender)
+
+	err := cfg.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(cfg.userBucket))
+		if b == nil {
+			return fmt.Errorf("database corrupted: bucket %v not found", cfg.userBucket)
+		}
+
+		v := b.Get(s)
+		if v == nil {
+			go textMessageWithLog(sender, unsubscribeFail)
+			return nil
+		}
+
+		err := b.Delete(s)
+		if err != nil {
+			go textMessageWithLog(sender, unexpected)
+			return err
+		}
+		go textMessageWithLog(sender, unsubscribeSuccess)
+
+		return nil
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+func defaultHandler(sender, text string) {
+	log.Printf("Unrecognised command \"%v\"", text)
+	textMessageWithLog(sender, unrecognised)
+}
+
+func parseMessage(sender string, text string) {
 
 	text = strings.TrimSpace(text)
 	text = strings.Trim(text, "*_`")
 	text = strings.ToLower(text)
 
+	if !strings.HasPrefix(text, cfg.commandPrefix) {
+		defaultHandler(sender, text)
+	}
+
 	switch text {
-	case "/subscribe":
-		err := cfg.db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(userBucket))
-			if b == nil {
-				return fmt.Errorf("database corrupted: bucket %v not found", userBucket)
-			}
-
-			v := b.Get(s)
-			if v != nil {
-				go textMessageWithLog(sender, subscribeFail)
-				return nil
-			}
-
-			err := b.Put(s, []byte{})
-			if err != nil {
-				go textMessageWithLog(sender, unexpected)
-				return err
-			}
-			go textMessageWithLog(sender, subscribeSuccess)
-
-			return nil
-		})
-
-		if err != nil {
-			log.Println(err)
-		}
-	case "/unsubscribe":
-		err := cfg.db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(userBucket))
-			if b == nil {
-				return fmt.Errorf("database corrupted: bucket %v not found", userBucket)
-			}
-
-			v := b.Get(s)
-			if v == nil {
-				go textMessageWithLog(sender, unsubscribeFail)
-				return nil
-			}
-
-			err := b.Delete(s)
-			if err != nil {
-				go textMessageWithLog(sender, unexpected)
-				return err
-			}
-			go textMessageWithLog(sender, unsubscribeSuccess)
-
-			return nil
-		})
-
-		if err != nil {
-			log.Println(err)
-		}
-	case "/help", "h":
+	case "subscribe", "s":
+		subscribeHandler(sender)
+	case "unsubscribe", "u":
+		unsubscribeHandler(sender)
+	case "help", "h":
 		textMessageWithLog(sender, help)
-	case "/lunch":
+	case "lunch", "l":
 		menuMessage(sender, true, true)
-	case "/dinner":
+	case "dinner", "d":
 		menuMessage(sender, false, true)
 	default:
-		log.Printf("Unrecognised command \"%v\"", text)
-		textMessageWithLog(sender, unrecognised)
+		defaultHandler(sender, text)
 	}
 }
 
@@ -129,7 +148,10 @@ func webhook(body []byte) {
 	}
 
 	o := Object{}
-	json.Unmarshal(body, &o)
+	err := json.Unmarshal(body, &o)
+	if err != nil {
+		log.Println(err)
+	}
 
 	for i := range o.Entries {
 		for j := range o.Entries[i].Messages {
@@ -178,12 +200,12 @@ func menuMessage(sender string, isLunch bool, forceSend bool) {
 	}
 }
 
-func timedMessage(isLunch bool, forceSend bool) {
-	cfg.db.View(func(tx *bolt.Tx) error {
+func timedMessage(isLunch, forceSend bool) {
+	cfg.db.View(func(tx *bolt.Tx) error { // nolint: errcheck
 		// Assume bucket exists and has keys
-		b := tx.Bucket([]byte(userBucket))
+		b := tx.Bucket([]byte(cfg.userBucket))
 		log.Println("Entered User Bucket")
-		b.ForEach(func(k, v []byte) error {
+		b.ForEach(func(k, v []byte) error { // nolint: errcheck
 			go menuMessage(string(k), isLunch, forceSend)
 			return nil
 		})

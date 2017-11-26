@@ -1,10 +1,5 @@
 # Exclude unit tests (for now)
 *_test.go
 
-# Sublime Text related
-*.sublime-project
-*.sublime-workspace
-
 # Server specific config
-*config.json
-env
+env/

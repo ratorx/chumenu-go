@@ -9,25 +9,23 @@ import (
 	"time"
 
 	"io/ioutil"
+	"strconv"
 
 	"github.com/boltdb/bolt"
 	"github.com/jasonlvhit/gocron"
 	"github.com/ratorx/chumenu-go/facebook"
 )
 
-const (
-	defaultPort = 5001
-	userBucket  = "users"
-)
-
 type config struct {
-	appSecret   string
-	certPath    string
-	keyPath     string
-	db          *bolt.DB
-	port        uint
-	verifyToken string
-	client      *facebook.Client
+	appSecret     string           // used for request checksum verification
+	certPath      string           // path to cert.pem
+	client        *facebook.Client // api client for sending messages
+	commandPrefix string           // prefix for testing commands
+	db            *bolt.DB         // db reference
+	keyPath       string           // path to privkey.pem
+	port          uint             // server port
+	userBucket    string           // bucket for users
+	verifyToken   string           // token used for initial verification
 }
 
 var cfg config
@@ -59,20 +57,23 @@ func handler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		// verify origin of request
 		if !checkSHA(request.Header.Get("X-Hub-Signature"), body) {
 			log.Println("checksum failed: checksum of body is invalid")
 			http.Error(response, "SHA1 validation failed", http.StatusUnauthorized)
 			return
 		}
 
+		// handle webhook in separate thread to maintain low request time
 		go webhook(body)
 		response.WriteHeader(http.StatusOK)
 	default:
-		log.Printf("%v request", request.Method)
+		log.Printf("unknown request type: %v", request.Method)
 		http.Error(response, "HTTP method not GET or POST", http.StatusMethodNotAllowed)
 	}
 }
 
+// Config values with default initialiser
 func getConfigValue(env string, def string) string {
 	value, success := os.LookupEnv(env)
 	if !success {
@@ -82,12 +83,25 @@ func getConfigValue(env string, def string) string {
 	return value
 }
 
+// Initialiser for default port
+func getPort(env string, def uint) uint {
+	value, success := os.LookupEnv(env)
+	if !success {
+		return def
+	}
+
+	port, _ := strconv.Atoi(value)
+	return uint(port)
+}
+
 func init() {
 	cfg.appSecret = getConfigValue("FACEBOOK_APP_SECRET", "")
 	cfg.certPath = getConfigValue("SSL_CERT_PATH", "~/.config/chumenu/fullchain.pem")
+	cfg.commandPrefix = getConfigValue("COMMAND_PREFIX", "/")
 	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "~/.config/chumenu/privkey.pem")
-	cfg.port = defaultPort
+	cfg.userBucket = getConfigValue("USER_BUCKET", "")
 	cfg.verifyToken = getConfigValue("FACEBOOK_VERIFICATION_TOKEN", "")
+	cfg.port = getPort("PORT", 5001)
 
 	// Initialiser variables for other Config members
 	accessToken := getConfigValue("FACEBOOK_ACCESS_TOKEN", "")
@@ -104,7 +118,7 @@ func init() {
 	cfg.db = db
 
 	err = cfg.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(userBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket))
 		if err != nil {
 			return err
 		}
@@ -115,21 +129,22 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	// Cron Setup
+	// timed message for subscribers
 	gocron.Every(1).Day().At("11:40").Do(func() { timedMessage(true, false) })
 	gocron.Every(1).Day().At("17:00").Do(func() { timedMessage(false, false) })
 
-	// Web Handler Setup
+	// api handler
 	http.HandleFunc("/webhook", handler)
+	// privacy page
 	http.HandleFunc("/privacy", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "public/privacy.html") })
 }
 
 func main() {
 	log.SetFlags(0)
 	defer cfg.db.Close() // nolint: errcheck
-	// Cron Initialisation
+	// start timed messages
 	go func() { <-gocron.Start() }()
 
-	// Webserver Start
+	// start webserver in default thread
 	log.Fatalln(http.ListenAndServeTLS(fmt.Sprintf(":%v", cfg.port), cfg.certPath, cfg.keyPath, nil))
 }
