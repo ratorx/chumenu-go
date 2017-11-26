@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha1"
 	"fmt"
 	"log"
 	"net/http"
@@ -49,16 +47,6 @@ func verifyWebhook(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func checkSHA(sha string, body []byte) bool {
-	expectedSum := []byte(sha[5:])
-
-	mac := hmac.New(sha1.New, []byte(cfg.appSecret))
-	mac.Write(body)
-	actualSum := mac.Sum(nil)
-
-	return hmac.Equal(expectedSum, actualSum)
-}
-
 func handler(response http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "GET":
@@ -71,12 +59,11 @@ func handler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// Skip SHA1 check until it's fixed
-		// if !checkSHA(request.Header.Get("X-Hub-Signature"), body) {
-		// 	log.Println("Invalid SHA1 key in header")
-		// 	http.Error(response, "SHA1 validation failed", http.StatusUnauthorized)
-		// 	return
-		// }
+		if !checkSHA(request.Header.Get("X-Hub-Signature"), body) {
+			log.Println("Invalid SHA1 key in header")
+			http.Error(response, "SHA1 validation failed", http.StatusUnauthorized)
+			return
+		}
 
 		go webhook(body)
 		response.WriteHeader(http.StatusOK)
@@ -140,7 +127,7 @@ func init() {
 }
 
 func main() {
-	defer cfg.db.Close()
+	defer cfg.db.Close() // nolint: errcheck
 	// Cron Initialisation
 	go func() { <-gocron.Start() }()
 
