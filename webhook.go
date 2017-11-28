@@ -31,8 +31,6 @@ func textMessageWithLog(sender string, message string) {
 	err := cfg.client.TextMessage(sender, message)
 	if err != nil {
 		log.Println(err)
-	} else {
-		log.Printf("facebook message: sent to %v", sender)
 	}
 }
 
