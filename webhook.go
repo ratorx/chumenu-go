@@ -215,9 +215,10 @@ func timedMessage(isLunch, forceSend bool) {
 	var num uint
 	err := cfg.db.View(func(tx *bolt.Tx) error { // nolint: errcheck
 		// Assume bucket exists and has keys
-		b, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket))
-		if err != nil {
-			return err
+		b := tx.Bucket([]byte(cfg.userBucket))
+
+		if b == nil {
+			return fmt.Errorf("database corrupted: bucket %v not found", cfg.userBucket)
 		}
 
 		b.ForEach(func(k, v []byte) error { // nolint: errcheck
