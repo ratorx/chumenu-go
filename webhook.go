@@ -31,6 +31,8 @@ func textMessageWithLog(sender string, message string) {
 	err := cfg.client.TextMessage(sender, message)
 	if err != nil {
 		log.Println(err)
+	} else {
+		log.Printf("facebook message: sent to %v", sender)
 	}
 }
 
@@ -95,7 +97,7 @@ func unsubscribeHandler(sender string) {
 	}
 }
 func defaultHandler(sender, text string) {
-	log.Printf("Unrecognised command \"%v\"", text)
+	log.Printf("unrecognised command: %v", text)
 	textMessageWithLog(sender, unrecognised)
 }
 
@@ -170,7 +172,7 @@ func mealMessage(sender string, prefix string, meal menus.Meal) {
 	textMessageWithLog(sender, prefix+"\n"+meal.String())
 }
 
-// Replace block with cache
+// TODO: Replace block with cache
 func menuMessage(sender string, isLunch bool, forceSend bool) {
 	currentTime := time.Now()
 	block, _ := menus.GetData(uint8(currentTime.Weekday())) // Normalise to UNIX days
@@ -204,14 +206,33 @@ func menuMessage(sender string, isLunch bool, forceSend bool) {
 }
 
 func timedMessage(isLunch, forceSend bool) {
-	cfg.db.View(func(tx *bolt.Tx) error { // nolint: errcheck
+	// For logs
+	var meal string
+	if isLunch {
+		meal = "lunch"
+	} else {
+		meal = "dinner"
+	}
+
+	var num uint
+	err := cfg.db.View(func(tx *bolt.Tx) error { // nolint: errcheck
 		// Assume bucket exists and has keys
-		b := tx.Bucket([]byte(cfg.userBucket))
-		log.Println("Entered User Bucket")
+		b, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket))
+		if err != nil {
+			return err
+		}
+
 		b.ForEach(func(k, v []byte) error { // nolint: errcheck
 			go menuMessage(string(k), isLunch, forceSend)
+			num++
 			return nil
 		})
 		return nil
 	})
+
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Printf("timed message: send attempt for %v message to %v users", meal, num)
+	}
 }
