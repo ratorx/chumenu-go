@@ -3,8 +3,8 @@ A Go implementation of [chumenu](https://github.com/ratorx/chumenu).
 
 Almost ready for production...
 ## TODO
-* Fix HMAC encryption validation on Facebook webhook (currently disabled due to MANY non-standard escape codes for characters)
-* Migrate chumenu users to new database
+* ~~Fix HMAC encryption validation on Facebook webhook (currently disabled due to MANY non-standard escape codes for characters)~~
+* Add support for new "broadcast messages" and "labels" in new Messenger API
 
 ## Planned Features
 
