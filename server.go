@@ -8,7 +8,6 @@ import (
 
 	"time"
 
-	"io/ioutil"
 	"strconv"
 
 	"github.com/boltdb/bolt"
@@ -18,19 +17,20 @@ import (
 
 const (
 	userBucket = "users"
+	brunchTime = "10:30"
+	lunchTime  = "11:40"
+	dinnerTime = "17:00"
 )
 
 type config struct {
-	certPath       string               // path to cert.pem
-	sendClient     *facebook.SendClient // api client for sending messages
-	webhook        *facebook.Webhook    // Facebook Webhook handler
-	messageHandler string               // Write a Message Handler
-	commandPrefix  string               // prefix for testing commands
-	db             *bolt.DB             // db reference
-	keyPath        string               // path to privkey.pem
-	port           uint                 // server port
-	userBucket     string               // bucket for users
-	debug          *Log.Logger          // Logger for all packages
+	certPath   string               // path to cert.pem
+	sendClient *facebook.SendClient // api client for sending messages
+	webhook    *facebook.Webhook    // Facebook Webhook handler
+	db         *bolt.DB             // db reference
+	keyPath    string               // path to privkey.pem
+	port       uint                 // server port
+	userBucket string               // bucket for users
+	debug      *log.Logger          // Logger for all packages
 }
 
 var cfg config
@@ -58,7 +58,6 @@ func getPort(env string, def uint) uint {
 
 func init() {
 	cfg.certPath = getConfigValue("SSL_CERT_PATH", "~/.config/chumenu/fullchain.pem")
-	cfg.commandPrefix = getConfigValue("COMMAND_PREFIX", "/")
 	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "~/.config/chumenu/privkey.pem")
 	cfg.userBucket = userBucket
 	cfg.port = getPort("PORT", 5001)
@@ -67,13 +66,14 @@ func init() {
 	accessToken := getConfigValue("FACEBOOK_ACCESS_TOKEN", "")
 	dbPath := getConfigValue("CHUMENU_DB_PATH", "~/.config/chumenu/chumenu.db")
 
+	// Debug Logger
+	cfg.debug = log.New(os.Stdout, "", log.Lshortfile)
+
 	// Facebook Send Client
-	cfg.client = &facebook.SendClient{AccessToken: accessToken, BaseURL: facebook.APIBase, Metadata: "Churchill Menus"}
+	cfg.sendClient = &facebook.SendClient{AccessToken: accessToken, BaseURL: facebook.APIBase, Metadata: "Churchill Menus"}
 
 	// Facebook Webhook
-	cfg.webhook = &facebook.Webhook{AppSecret: getConfigValue("FACEBOOK_APP_SECRET", ""), VerifyToken: getConfigValue("FACEBOOK_VERIFICATION_TOKEN", "")}
-
-	// Facebook Event Handler
+	cfg.webhook = &facebook.Webhook{AppSecret: getConfigValue("FACEBOOK_APP_SECRET", ""), VerifyToken: getConfigValue("FACEBOOK_VERIFICATION_TOKEN", ""), Handler: EventHandler{commandPrefix: getConfigValue("COMMAND_PREFIX", "/")}, Debug: cfg.debug}
 
 	// Database Initialisation
 	db, err := bolt.Open(dbPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
@@ -95,11 +95,20 @@ func init() {
 	}
 
 	// timed message for subscribers
-	gocron.Every(1).Day().At("11:40").Do(func() { timedMessage(true, false) })
-	gocron.Every(1).Day().At("17:00").Do(func() { timedMessage(false, false) })
+	// Lunch
+	gocron.Every(1).Monday().At(lunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Tuesday().At(lunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Wednesday().At(lunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Thursday().At(lunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Friday().At(lunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Sunday().At(lunchTime).Do(timedMessage, true, false)
+	// Dinner times
+	gocron.Every(1).Day().At(dinnerTime).Do(func() { timedMessage(false, false) })
+	// Brunch
+	gocron.Every(1).Saturday().At(brunchTime).Do(timedMessage, true, false)
 
 	// api handler
-	http.HandleFunc("/webhook", webhook.ResponseHandler)
+	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)
 	// privacy page
 	http.HandleFunc("/privacy", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "public/privacy.html") })
 }

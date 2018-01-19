@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,7 +13,7 @@ import (
 )
 
 type MessagingEvent struct {
-	Sender  recipient `json:"recipient"`
+	Sender  Recipient `json:"sender"`
 	Message *Message  `json:"message"`
 }
 
@@ -32,7 +33,7 @@ type Webhook struct {
 	AppSecret   string
 	VerifyToken string
 	Handler     EventHandler
-	Debug       *Log.Logger
+	Debug       *log.Logger
 }
 
 func asciiRune(r rune) string {
@@ -82,33 +83,33 @@ func (w *Webhook) verify(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func (w *Webhook) ResponseHandler(response http.ResponseWriter, request *http.Request) {
+func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request) {
+
 	switch request.Method {
 	case "GET":
-		w.verify(response, request)
-		Debug.Printf("Webhook verified")
+		w.verify(res, request)
+		w.Debug.Printf("Webhook verified")
 	case "POST":
 		body, err := ioutil.ReadAll(request.Body)
 		if err != nil {
-			http.Error(response, "Request Body could not be parsed", http.StatusBadRequest)
+			http.Error(res, "Request Body could not be parsed", http.StatusBadRequest)
 			return
 		}
 
 		if !w.checkSHA(request.Header.Get("X-Hub-Signature"), body) {
-			http.Error(response, "SHA1 validation failed", http.StatusUnauthorized)
+			http.Error(res, "SHA1 validation failed", http.StatusUnauthorized)
 			return
 		}
-
-		r = response{}
+		r := response{}
 		err = json.Unmarshal(body, &r)
 		for i := range r.Events {
 			w.Handler.HandleEvent(r.Events[i].Messages)
 		}
 
-		response.WriteHeader(http.StatusOK)
-		Debug.Printf("Callback received")
+		// res.WriteHeader(http.StatusOK)
+		w.Debug.Printf("Callback received")
 	default:
-		http.Error(response, "HTTP method not GET or POST", http.StatusMethodNotAllowed)
-		Debug.Printf("HTTP method %s attempted", request.Method)
+		http.Error(res, "HTTP method not GET or POST", http.StatusMethodNotAllowed)
+		w.Debug.Printf("HTTP method %s attempted", request.Method)
 	}
 }

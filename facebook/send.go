@@ -14,7 +14,6 @@ type messageType string
 
 const (
 	Response     messageType = "RESPONSE"
-	Update       messageType = "UPDATE"
 	Subscription messageType = "NON_PROMOTIONAL_SUBSCRIPTION"
 )
 
@@ -53,7 +52,7 @@ type SendMessage struct {
 }
 
 type Payload struct {
-	Recipient recipient    `json:"recipient"`
+	Recipient Recipient    `json:"recipient"`
 	Message   *SendMessage `json:"message"`
 	Type      messageType  `json:"messaging_type"`
 }
@@ -83,7 +82,7 @@ func (c *SendClient) apiCall(payload *Payload) error {
 }
 
 func (c *SendClient) SendMessage(r string, text string, mType messageType, qr []QuickReply) error {
-	return c.apiCall(&Payload{Recipient: recipient{r}, Message: &SendMessage{Message: Message{Text: text, Metadata: c.Metadata}, Replies: qr}, Type: mType})
+	return c.apiCall(&Payload{Recipient: Recipient{r}, Message: &SendMessage{Message: Message{Text: text, Metadata: c.Metadata}, Replies: qr}, Type: mType})
 }
 
 type MessageError struct {
