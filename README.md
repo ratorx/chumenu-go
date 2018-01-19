@@ -1,13 +1,21 @@
 # chumenu-go
 A Go implementation of [chumenu](https://github.com/ratorx/chumenu).
 
-Almost ready for production...
+Status: As ready as it will ever be
+
 ## TODO
-* ~~Fix HMAC encryption validation on Facebook webhook (currently disabled due to MANY non-standard escape codes for characters)~~
-* Add support for new "broadcast messages" and "labels" in new Messenger API
+* Test...
 
-## Planned Features
+## Improvements over chumenu
+* Not a single line of Javascript
+* Slightly faster
+* Proper database (Multiple simultaneous readers 😮)
+* Fix notification time for Saturday brunch
+* Quick Replies
 
-* More subscription options (allow subscriptions to lunch and dinner individually)
-* Brunch notification time fix
-* Add command to get meal times from website
+## Potential features
+* Meal times
+* Individual subscriptions to lunch and dinner
+
+## Known Issues (doesn't mean they'll be fixed...)
+* Saturday's brunch is called lunch
