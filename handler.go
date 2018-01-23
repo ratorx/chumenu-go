@@ -43,7 +43,7 @@ const (
 
 	// Other defaults
 	helpMessage  = "Available commands:\n*subscribe* - Receive regular menu updates\n*unsubscribe* - Unsubscribe from menu updates\n*lunch* - Get the next lunch menu\n*dinner* - Get the next the dinner menu"
-	unrecognised = "Command not recognised. Type help for a list of available commands."
+	unrecognised = "Command not recognised. Type *help* for a list of available commands."
 	unexpected   = "Unexpected Error. Will fix ASAP."
 )
 
@@ -157,7 +157,13 @@ func menuMessage(r string, isLunch bool) {
 	responseMessage(r, prefix+"\n"+meal.String(), standardQR)
 }
 
-func timedMessage(isLunch, forceSend bool) {
+func timedMessage(isLunch, isBrunch, forceSend bool) {
+	// Explicit day check because gocron library support for weekdays is broken
+	if isLunch && (isBrunch == (time.Now().Weekday() != 6)) {
+		cfg.debug.Println("Timed message skipped on %s at %v:%v - isLunch: %v, isLunch: %v", time.Now().Weekday().String(), time.Now().Hour(), time.Now().Minute(), isLunch, isBrunch)
+		return
+	}
+
 	prefix, meal := getMenu(isLunch)
 
 	if !forceSend && meal.String() == " - TBC" {

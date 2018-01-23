@@ -16,10 +16,11 @@ import (
 )
 
 const (
-	userBucket = "users"
-	brunchTime = "10:30"
-	lunchTime  = "11:40"
-	dinnerTime = "17:00"
+	defaultUserBucket = "users"
+	brunchTime        = "10:30"
+	lunchTime         = "11:40"
+	dinnerTime        = "17:00"
+	forceTimedMessage = false
 )
 
 type config struct {
@@ -59,8 +60,8 @@ func getPort(env string, def uint) uint {
 func init() {
 	cfg.certPath = getConfigValue("SSL_CERT_PATH", "~/.config/chumenu/fullchain.pem")
 	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "~/.config/chumenu/privkey.pem")
-	cfg.userBucket = userBucket
-	cfg.port = getPort("PORT", 5001)
+	cfg.userBucket = getConfigValue("USER_BUCKET", defaultUserBucket)
+	cfg.port = getPort("PORT", 0)
 
 	// Initialiser variables for other Config members
 	accessToken := getConfigValue("FACEBOOK_ACCESS_TOKEN", "")
@@ -95,17 +96,13 @@ func init() {
 	}
 
 	// timed message for subscribers
-	// Lunch
-	gocron.Every(1).Monday().At(lunchTime).Do(timedMessage, true, false)
-	gocron.Every(1).Tuesday().At(lunchTime).Do(timedMessage, true, false)
-	gocron.Every(1).Wednesday().At(lunchTime).Do(timedMessage, true, false)
-	gocron.Every(1).Thursday().At(lunchTime).Do(timedMessage, true, false)
-	gocron.Every(1).Friday().At(lunchTime).Do(timedMessage, true, false)
-	gocron.Every(1).Sunday().At(lunchTime).Do(timedMessage, true, false)
-	// Dinner times
-	gocron.Every(1).Day().At(dinnerTime).Do(func() { timedMessage(false, false) })
+	// Fire more than necessary because of library bugs
 	// Brunch
-	gocron.Every(1).Saturday().At(brunchTime).Do(timedMessage, true, false)
+	gocron.Every(1).Day().At(brunchTime).Do(timedMessage, true, true, forceTimedMessage)
+	// Lunch
+	gocron.Every(1).Day().At(lunchTime).Do(timedMessage, true, false, forceTimedMessage)
+	// Dinner
+	gocron.Every(1).Day().At(dinnerTime).Do(timedMessage, false, false, forceTimedMessage)
 
 	// api handler
 	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)
