@@ -2,5 +2,6 @@
 *_test.go
 
 # Server specific config
+env
 env/
 data/
