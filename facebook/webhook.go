@@ -80,6 +80,7 @@ func (w *Webhook) verify(response http.ResponseWriter, request *http.Request) {
 		http.Error(response, "invalid hub.verify_token", http.StatusUnauthorized)
 	default:
 		fmt.Fprintf(response, urlQueries.Get("hub.challenge"))
+		w.Debug.Print("Webhook verified.")
 	}
 }
 
@@ -88,7 +89,6 @@ func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request
 	switch request.Method {
 	case "GET":
 		w.verify(res, request)
-		w.Debug.Printf("Webhook verified")
 	case "POST":
 		body, err := ioutil.ReadAll(request.Body)
 		if err != nil {
@@ -98,6 +98,7 @@ func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request
 
 		if !w.checkSHA(request.Header.Get("X-Hub-Signature"), body) {
 			http.Error(res, "SHA1 validation failed", http.StatusUnauthorized)
+			w.Debug.Print("Request verification failed")
 			return
 		}
 		r := response{}
