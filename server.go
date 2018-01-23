@@ -107,7 +107,9 @@ func init() {
 	// api handler
 	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)
 	// privacy page
-	http.HandleFunc("/privacy", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "public/privacy.html") })
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, getConfigValue("PUBLIC_DIR", "public"))
+	})
 }
 
 func main() {
