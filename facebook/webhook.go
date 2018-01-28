@@ -97,17 +97,18 @@ func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request
 		}
 
 		if !w.checkSHA(request.Header.Get("X-Hub-Signature"), body) {
-			http.Error(res, "SHA1 validation failed", http.StatusUnauthorized)
+			res.WriteHeader(200)
 			w.Debug.Print("Request verification failed")
+			w.Debug.Print(string(body))
 			return
 		}
 		r := response{}
 		err = json.Unmarshal(body, &r)
 		for i := range r.Events {
-			w.Handler.HandleEvent(r.Events[i].Messages)
+			go w.Handler.HandleEvent(r.Events[i].Messages)
 		}
 
-		// res.WriteHeader(http.StatusOK)
+		res.WriteHeader(200)
 		w.Debug.Printf("Callback received")
 	default:
 		http.Error(res, "HTTP method not GET or POST", http.StatusMethodNotAllowed)
