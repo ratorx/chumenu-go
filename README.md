@@ -1,14 +1,15 @@
 # chumenu-go
 A Go implementation of [chumenu](https://github.com/ratorx/chumenu).
 
-Status: As ready as it will ever be
+Status: Depolyed
 
 ## TODO
-* Test...
+* Unit tests
+* Better comments™
 
 ## Improvements over chumenu
 * Not a single line of Javascript
-* Slightly faster
+* Slightly faster (literally milliseconds!)
 * Proper database (Multiple simultaneous readers 😮)
 * Fix notification time for Saturday brunch
 * Quick Replies
