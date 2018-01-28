@@ -3,6 +3,7 @@ package menus
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html/atom"
@@ -18,7 +19,7 @@ func postProcessing(item string) string {
 	return item
 }
 
-func GetData(day uint8) (Datablock, error) {
+func GetData(weekday time.Weekday) (Datablock, error) {
 	table, err := getTable()
 	if err != nil {
 		return Datablock{}, err
@@ -29,14 +30,21 @@ func GetData(day uint8) (Datablock, error) {
 		return Datablock{}, fmt.Errorf("Scraper: Menus array is not the correct length (Expected: 8, Actual: %v)", len(menus))
 	}
 
+	// Convert from Weekday to slice index
+	// Only need to change Sunday, int value of everything else is correct
+	index := int(weekday)
+	if weekday == time.Sunday {
+		index = 7
+	}
+
 	ret := Datablock{}
-	menu, err := parseDay(menus[day])
+	menu, err := parseDay(menus[index])
 	if err != nil {
 		return ret, err
 	}
 	ret.Current = menu
 
-	menu, err = parseDay(menus[(day%7)+1])
+	menu, err = parseDay(menus[(index%7)+1])
 	if err != nil {
 		return ret, err
 	}

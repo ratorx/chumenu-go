@@ -124,7 +124,7 @@ func unsubscribeHandler(sender string) {
 
 func getMenu(isLunch bool) (string, menus.Meal) {
 	currentTime := time.Now()
-	block, _ := menus.GetData(uint8(currentTime.Weekday())) // Normalise to UNIX days
+	block, _ := menus.GetData(currentTime.Weekday())
 	hour := currentTime.Hour()
 	minute := currentTime.Minute()
 
