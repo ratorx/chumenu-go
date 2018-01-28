@@ -37,8 +37,11 @@ type Webhook struct {
 }
 
 func asciiRune(r rune) string {
-	if r == '\\' {
+	switch r {
+	case '\\':
 		return "\\"
+	case '\'':
+		return "'"
 	}
 
 	s := strconv.QuoteRuneToASCII(r)
