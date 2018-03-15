@@ -9,7 +9,7 @@ type Meal []string
 
 func (m Meal) String() string {
 	// fmt.Println()
-	if len(m) == 0 || (len(m) == 1 && (m[0] == "" || m[0] == "\xa0")) {
+	if len(m) == 0 {
 		return " - TBC"
 	}
 

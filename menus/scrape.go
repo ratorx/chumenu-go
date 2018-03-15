@@ -9,6 +9,7 @@ import (
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
+	"strings"
 )
 
 const (
@@ -53,6 +54,15 @@ func getTable() (*html.Node, error) {
 	return getTableNode(root)
 }
 
+func postProcessing(item string) string {
+	item = strings.Trim(item, "\xa0 \n\t")
+	if item == "FOD" || item == "Fish of the day" {
+		item = "Fish of the Day"
+	}
+
+	return item
+}
+
 func parseMeal(node *html.Node) (Meal, error) {
 	if node == nil {
 		// Custom Error
@@ -61,13 +71,12 @@ func parseMeal(node *html.Node) (Meal, error) {
 
 	// Parses a list of meal items into a Meal
 	items := scrape.FindAll(node, scrape.ByTag(atom.Li))
-	if len(items) == 0 || scrape.Text(items[0]) == "\xa0" || scrape.Text(items[0]) == "" { // Empty menu conditions
-		return Meal{}, nil
-	}
 
-	var meal Meal = make([]string, len(items))
-	for i, item := range items {
-		meal[i] = postProcessing(scrape.Text(item))
+	var meal Meal = make([]string, 0, len(items))
+	for i, _ := range items {
+		if p := postProcessing(scrape.Text(items[i])); p != "" {
+			meal = append(meal, p)
+		}
 	}
 
 	return meal, nil

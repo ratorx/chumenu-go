@@ -2,22 +2,11 @@ package menus
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html/atom"
 )
-
-func postProcessing(item string) string {
-	item = strings.TrimSpace(item)
-	item = strings.TrimSuffix(item, "\xa0")
-	if item == "FOD" || item == "Fish of the day" {
-		item = "Fish of the Day"
-	}
-
-	return item
-}
 
 func GetData(weekday time.Weekday) (Datablock, error) {
 	table, err := getTable()
