@@ -10,7 +10,7 @@ import (
 	"github.com/ratorx/chumenu-go/menus"
 )
 
-type EventHandler struct {
+type eventHandler struct {
 	commandPrefix string
 }
 
@@ -211,7 +211,7 @@ func defaultHandler(sender, text string) {
 	responseMessage(sender, unrecognised, defQR)
 }
 
-func (e EventHandler) HandleEvent(m []facebook.MessagingEvent) {
+func (e eventHandler) HandleEvent(m []facebook.MessagingEvent) {
 	for i := range m {
 		r := m[i].Sender.String()
 		text := strings.TrimSpace(m[i].Message.Text)

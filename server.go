@@ -53,7 +53,10 @@ func getPort(env string, def uint) uint {
 		return def
 	}
 
-	port, _ := strconv.Atoi(value)
+	port, err := strconv.Atoi(value)
+	if err != nil {
+		return def
+	}
 	return uint(port)
 }
 
@@ -74,7 +77,7 @@ func init() {
 	cfg.sendClient = &facebook.SendClient{AccessToken: accessToken, BaseURL: facebook.APIBase, Metadata: "Churchill Menus"}
 
 	// Facebook Webhook
-	cfg.webhook = &facebook.Webhook{AppSecret: getConfigValue("FACEBOOK_APP_SECRET", ""), VerifyToken: getConfigValue("FACEBOOK_VERIFICATION_TOKEN", ""), Handler: EventHandler{commandPrefix: getConfigValue("COMMAND_PREFIX", "/")}, Debug: cfg.debug}
+	cfg.webhook = &facebook.Webhook{AppSecret: getConfigValue("FACEBOOK_APP_SECRET", ""), VerifyToken: getConfigValue("FACEBOOK_VERIFICATION_TOKEN", ""), Handler: eventHandler{commandPrefix: getConfigValue("COMMAND_PREFIX", "/")}, Debug: cfg.debug}
 
 	// Database Initialisation
 	db, err := bolt.Open(dbPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
@@ -84,7 +87,7 @@ func init() {
 	cfg.db = db
 
 	err = cfg.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket)) // nolint: vetshadow
 		if err != nil {
 			return err
 		}
