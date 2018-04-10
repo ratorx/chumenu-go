@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/ratorx/chumenu-go/facebook"
 	"github.com/ratorx/chumenu-go/menus"
-	"strings"
-	"time"
 )
 
 type EventHandler struct {
@@ -160,7 +161,7 @@ func menuMessage(r string, isLunch bool) {
 func timedMessage(isLunch, isBrunch, forceSend bool) {
 	// Explicit day check because gocron library support for weekdays is broken
 	if isLunch && (isBrunch == (time.Now().Weekday() != 6)) {
-		cfg.debug.Println("Timed message skipped on %s at %v:%v - isLunch: %v, isLunch: %v", time.Now().Weekday().String(), time.Now().Hour(), time.Now().Minute(), isLunch, isBrunch)
+		cfg.debug.Printf("Timed message skipped on %s at %v:%v - isLunch: %v, isLunch: %v", time.Now().Weekday().String(), time.Now().Hour(), time.Now().Minute(), isLunch, isBrunch)
 		return
 	}
 

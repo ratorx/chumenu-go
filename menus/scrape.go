@@ -6,10 +6,11 @@ import (
 
 	"net/http"
 
+	"strings"
+
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
-	"strings"
 )
 
 const (
