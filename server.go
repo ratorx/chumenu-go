@@ -58,14 +58,14 @@ func getPort(env string, def uint) uint {
 }
 
 func init() {
-	cfg.certPath = getConfigValue("SSL_CERT_PATH", "~/.config/chumenu/fullchain.pem")
-	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "~/.config/chumenu/privkey.pem")
+	cfg.certPath = getConfigValue("SSL_CERT_PATH", "")
+	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "")
 	cfg.userBucket = getConfigValue("USER_BUCKET", defaultUserBucket)
 	cfg.port = getPort("PORT", 0)
 
 	// Initialiser variables for other Config members
 	accessToken := getConfigValue("FACEBOOK_ACCESS_TOKEN", "")
-	dbPath := getConfigValue("CHUMENU_DB_PATH", "~/.config/chumenu/chumenu.db")
+	dbPath := getConfigValue("CHUMENU_DB_PATH", "test/chumenu.db")
 
 	// Debug Logger
 	cfg.debug = log.New(os.Stdout, "", log.Lshortfile)
@@ -119,5 +119,11 @@ func main() {
 	go func() { <-gocron.Start() }()
 
 	// start webserver in default thread
-	log.Fatalln(http.ListenAndServeTLS(fmt.Sprintf(":%v", cfg.port), cfg.certPath, cfg.keyPath, nil))
+	if cfg.certPath == "" || cfg.keyPath == "" {
+		log.Printf("Listening on %v (HTTP)", cfg.port)
+		log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%v", cfg.port), nil))
+	} else {
+		log.Printf("Listening on %v (HTTPS)", cfg.port)
+		log.Fatalln(http.ListenAndServeTLS(fmt.Sprintf(":%v", cfg.port), cfg.certPath, cfg.keyPath, nil))
+	}
 }
