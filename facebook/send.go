@@ -46,6 +46,15 @@ func (qr *QuickReply) MarshalJSON() ([]byte, error) {
 	return json.Marshal(temp)
 }
 
+func NewQuickReplySlice(labels []string) []QuickReply {
+	qrs := make([]QuickReply, 0, len(labels))
+	for _, str := range labels {
+		qrs = append(qrs, QuickReply{Text: str})
+	}
+
+	return qrs
+}
+
 type SendMessage struct {
 	Message
 	Replies []QuickReply `json:"quick_replies"`

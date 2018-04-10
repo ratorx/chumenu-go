@@ -25,11 +25,11 @@ const (
 
 // Common quick replies
 var (
-	standardQR       = []facebook.QuickReply{facebook.QuickReply{lunch}, facebook.QuickReply{dinner}, facebook.QuickReply{help}}
-	subscriptionQR   = []facebook.QuickReply{facebook.QuickReply{unsubscribe}, facebook.QuickReply{lunch}, facebook.QuickReply{dinner}, facebook.QuickReply{help}}
-	unsubscriptionQR = []facebook.QuickReply{facebook.QuickReply{subscribe}, facebook.QuickReply{help}}
-	helpQR           = []facebook.QuickReply{facebook.QuickReply{lunch}, facebook.QuickReply{dinner}, facebook.QuickReply{subscribe}, facebook.QuickReply{unsubscribe}}
-	defQR            = []facebook.QuickReply{facebook.QuickReply{help}}
+	standardQR       = facebook.NewQuickReplySlice([]string{lunch, dinner, help})
+	subscriptionQR   = facebook.NewQuickReplySlice([]string{unsubscribe, lunch, dinner, help})
+	unsubscriptionQR = facebook.NewQuickReplySlice([]string{subscribe, help})
+	helpQR           = facebook.NewQuickReplySlice([]string{lunch, dinner, subscribe, unsubscribe})
+	defQR            = facebook.NewQuickReplySlice([]string{help})
 )
 
 // standard Messages
