@@ -88,24 +88,17 @@ func init() {
 
 	err = cfg.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(cfg.userBucket)) // nolint: vetshadow
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	})
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// timed message for subscribers
-	// Fire more than necessary because of library bugs
-	// Brunch
-	gocron.Every(1).Day().At(brunchTime).Do(timedMessage, true, true, forceTimedMessage)
 	// Lunch
-	gocron.Every(1).Day().At(lunchTime).Do(timedMessage, true, false, forceTimedMessage)
+	gocron.Every(1).Day().At(lunchTime).Do(timedMessage, true, forceTimedMessage)
 	// Dinner
-	gocron.Every(1).Day().At(dinnerTime).Do(timedMessage, false, false, forceTimedMessage)
+	gocron.Every(1).Day().At(dinnerTime).Do(timedMessage, false, forceTimedMessage)
 
 	// api handler
 	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)

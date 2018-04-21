@@ -158,13 +158,7 @@ func menuMessage(r string, isLunch bool) {
 	responseMessage(r, prefix+"\n"+meal.String(), standardQR)
 }
 
-func timedMessage(isLunch, isBrunch, forceSend bool) {
-	// Explicit day check because gocron library support for weekdays is broken
-	if isLunch && (isBrunch == (time.Now().Weekday() != 6)) {
-		cfg.debug.Printf("Timed message skipped on %s at %v:%v - isLunch: %v, isLunch: %v", time.Now().Weekday().String(), time.Now().Hour(), time.Now().Minute(), isLunch, isBrunch)
-		return
-	}
-
+func timedMessage(isLunch, forceSend bool) {
 	prefix, meal := getMenu(isLunch)
 
 	if !forceSend && meal.String() == " - TBC" {
