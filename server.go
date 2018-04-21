@@ -17,7 +17,6 @@ import (
 
 const (
 	defaultUserBucket = "users"
-	brunchTime        = "10:30"
 	lunchTime         = "11:40"
 	dinnerTime        = "17:00"
 	forceTimedMessage = false
@@ -107,9 +106,7 @@ func init() {
 	// api handler
 	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)
 	// privacy page
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, getConfigValue("PUBLIC_DIR", "public"))
-	})
+	http.Handle("/privacy", http.FileServer(http.Dir(getConfigValue("PUBLIC_DIR", "public"))))
 }
 
 func main() {
