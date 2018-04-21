@@ -24,6 +24,7 @@ const (
 )
 
 type config struct {
+	admin      string               // admin user
 	certPath   string               // path to cert.pem
 	sendClient *facebook.SendClient // api client for sending messages
 	webhook    *facebook.Webhook    // Facebook Webhook handler
@@ -78,6 +79,9 @@ func init() {
 
 	// Facebook Webhook
 	cfg.webhook = &facebook.Webhook{AppSecret: getConfigValue("FACEBOOK_APP_SECRET", ""), VerifyToken: getConfigValue("FACEBOOK_VERIFICATION_TOKEN", ""), Handler: eventHandler{commandPrefix: getConfigValue("COMMAND_PREFIX", "/")}, Debug: cfg.debug}
+
+	// Admin User
+	cfg.admin = getConfigValue("ADMIN_USER", "")
 
 	// Database Initialisation
 	db, err := bolt.Open(dbPath, 0600, &bolt.Options{Timeout: 1 * time.Second})

@@ -200,6 +200,32 @@ func timedMessage(isLunch, forceSend bool) {
 	}
 }
 
+func announceMessage(message string) {
+	var num uint
+
+	err := cfg.db.View(func(tx *bolt.Tx) error { // nolint: errcheck
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte(cfg.userBucket))
+
+		if b == nil {
+			return fmt.Errorf("database corrupted: bucket %v not found", cfg.userBucket)
+		}
+
+		b.ForEach(func(k, v []byte) error { // nolint: errcheck
+			go subscriptionMessage(string(k), message, subscriptionQR)
+			num++
+			return nil
+		})
+		return nil
+	})
+
+	if err != nil {
+		cfg.debug.Println(err)
+	} else {
+		cfg.debug.Printf("timed message send attempt for announce message to %v users", num)
+	}
+}
+
 func defaultHandler(sender, text string) {
 	cfg.debug.Printf("unrecognised command: %v", text)
 	responseMessage(sender, unrecognised, defQR)
@@ -218,6 +244,11 @@ func (e eventHandler) HandleEvent(m []facebook.MessagingEvent) {
 		}
 
 		text = strings.TrimPrefix(text, e.commandPrefix)
+
+		if strings.HasPrefix(text, "announce ") {
+			announceMessage(strings.TrimPrefix(text, "announce "))
+			continue
+		}
 
 		switch text {
 		case "subscribe", "s":
