@@ -18,6 +18,7 @@ type eventHandler struct {
 const (
 	lunch       = "lunch"
 	dinner      = "dinner"
+	times       = "times"
 	help        = "help"
 	subscribe   = "subscribe"
 	unsubscribe = "unsubscribe"
@@ -25,10 +26,10 @@ const (
 
 // Common quick replies
 var (
-	standardQR       = facebook.NewQuickReplySlice([]string{lunch, dinner, help})
-	subscriptionQR   = facebook.NewQuickReplySlice([]string{unsubscribe, lunch, dinner, help})
+	standardQR       = facebook.NewQuickReplySlice([]string{lunch, dinner, times, help})
+	subscriptionQR   = facebook.NewQuickReplySlice([]string{unsubscribe, lunch, dinner, times, help})
 	unsubscriptionQR = facebook.NewQuickReplySlice([]string{subscribe, help})
-	helpQR           = facebook.NewQuickReplySlice([]string{lunch, dinner, subscribe, unsubscribe})
+	helpQR           = facebook.NewQuickReplySlice([]string{lunch, dinner, times, subscribe, unsubscribe})
 	defQR            = facebook.NewQuickReplySlice([]string{help})
 )
 
@@ -230,6 +231,7 @@ func defaultHandler(sender, text string) {
 	responseMessage(sender, unrecognised, defQR)
 }
 
+// nolint : gocyclo
 func (e eventHandler) HandleEvent(m []facebook.MessagingEvent) {
 	for i := range m {
 		r := m[i].Sender.String()
@@ -244,6 +246,7 @@ func (e eventHandler) HandleEvent(m []facebook.MessagingEvent) {
 
 		text = strings.TrimPrefix(text, e.commandPrefix)
 
+		// Parse annouce message
 		if strings.HasPrefix(text, "announce ") {
 			announceMessage(strings.TrimPrefix(text, "announce "))
 			continue
@@ -256,6 +259,8 @@ func (e eventHandler) HandleEvent(m []facebook.MessagingEvent) {
 			unsubscribeHandler(r)
 		case "help", "h":
 			responseMessage(r, helpMessage, helpQR)
+		case "times", "t":
+			responseMessage(r, fmt.Sprintf("Lunch Time:\n%s\n\nDinner Time:\n%s\n", lunchTime, dinnerTime), standardQR)
 		case "lunch", "l":
 			menuMessage(r, true)
 		case "dinner", "d":
