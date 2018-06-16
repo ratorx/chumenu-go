@@ -12,6 +12,7 @@ import (
 	"strconv"
 )
 
+// MessagingEvent contains the details of a particular message received by the page
 type MessagingEvent struct {
 	Sender  Recipient `json:"sender"`
 	Message *Message  `json:"message"`
@@ -25,10 +26,12 @@ type response struct {
 	Events []event `json:"entry"`
 }
 
+// EventHandler handles MessagingEvents
 type EventHandler interface {
 	HandleEvent(me []MessagingEvent)
 }
 
+// Webhook contains the information required to create an endpoint for Facebook to call
 type Webhook struct {
 	AppSecret   string
 	VerifyToken string
@@ -87,6 +90,7 @@ func (w *Webhook) verify(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+// ResponseHandler performs the task of handling a request made to the Webhook
 func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request) {
 
 	switch request.Method {

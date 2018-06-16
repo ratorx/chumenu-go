@@ -12,11 +12,13 @@ var retryCodes = [...]int{613, 1200}
 
 type messageType string
 
+// Allowed message types
 const (
 	Response     messageType = "RESPONSE"
 	Subscription messageType = "NON_PROMOTIONAL_SUBSCRIPTION"
 )
 
+// SendClient is a struct containing the details required to connect to the Facebook endpoint in order to send messages
 type SendClient struct {
 	AccessToken string
 	BaseURL     string
@@ -31,10 +33,12 @@ func (c *SendClient) getURL() string {
 	return c.BaseURL + "messages?access_token=" + c.AccessToken
 }
 
+// QuickReply is a struct representing a single Facebook QuickReply entry
 type QuickReply struct {
 	Text string
 }
 
+// MarshalJSON converts a QuickReply struct into the form expected by the Facebook endpoint
 func (qr *QuickReply) MarshalJSON() ([]byte, error) {
 	type t struct {
 		A string `json:"title"`
@@ -46,6 +50,7 @@ func (qr *QuickReply) MarshalJSON() ([]byte, error) {
 	return json.Marshal(temp)
 }
 
+// NewQuickReplySlice is a convenience function for building multiple QuickReply structs from a list of labels
 func NewQuickReplySlice(labels []string) []QuickReply {
 	qrs := make([]QuickReply, 0, len(labels))
 	for _, str := range labels {
@@ -55,11 +60,13 @@ func NewQuickReplySlice(labels []string) []QuickReply {
 	return qrs
 }
 
+// SendMessage represents a message that can be sent by the Facebook page
 type SendMessage struct {
 	Message
 	Replies []QuickReply `json:"quick_replies"`
 }
 
+// Payload represents the data expected by the endpoint when sending a message
 type Payload struct {
 	Recipient Recipient    `json:"recipient"`
 	Message   *SendMessage `json:"message"`
@@ -90,10 +97,12 @@ func (c *SendClient) apiCall(payload *Payload) error {
 	return nil
 }
 
+// SendMessage is a convenience function to send a message to a particular user
 func (c *SendClient) SendMessage(r string, text string, mType messageType, qr []QuickReply) error {
 	return c.apiCall(&Payload{Recipient: Recipient{r}, Message: &SendMessage{Message: Message{Text: text, Metadata: c.Metadata}, Replies: qr}, Type: mType})
 }
 
+// MessageError represents the data received from Facebook when a erroneous request is made
 type MessageError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
