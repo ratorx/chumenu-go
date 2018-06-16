@@ -126,14 +126,13 @@ func unsubscribeHandler(sender string) {
 func getMenu(isLunch bool) (string, menus.Meal) {
 	currentTime := time.Now()
 	block, _ := menus.GetData(currentTime.Weekday())
-	hour := currentTime.Hour()
-	minute := currentTime.Minute()
+	currentHM := hourMinute{uint8(currentTime.Hour()), uint8(currentTime.Minute())}
 
 	var prefix string
 	var meal menus.Meal
 
 	if isLunch {
-		if hour > 13 || (hour == 13 && minute > 45) {
+		if currentHM.IsAfter(lunchTime.End) {
 			prefix = "Tomorrow's Lunch:"
 			meal = block.Next.Lunch
 		} else {
@@ -141,7 +140,7 @@ func getMenu(isLunch bool) (string, menus.Meal) {
 			meal = block.Current.Lunch
 		}
 	} else {
-		if hour > 19 || (hour == 19 && minute > 15) {
+		if currentHM.IsAfter(dinnerTime.End) {
 			prefix = "Tomorrow's Dinner:"
 			meal = block.Next.Dinner
 		} else {

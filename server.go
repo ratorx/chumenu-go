@@ -17,9 +17,13 @@ import (
 
 const (
 	defaultUserBucket = "users"
-	lunchTime         = "11:40"
-	dinnerTime        = "17:00"
 	forceTimedMessage = false
+)
+
+var (
+	lunchTime        = mealTime{hourMinute{12, 15}, hourMinute{13, 45}}
+	dinnerTime       = mealTime{hourMinute{17, 45}, hourMinute{19, 15}}
+	interval   uint8 = 45
 )
 
 type config struct {
@@ -99,9 +103,9 @@ func init() {
 	}
 
 	// Lunch
-	gocron.Every(1).Day().At(lunchTime).Do(timedMessage, true, forceTimedMessage)
+	gocron.Every(1).Day().At(lunchTime.Start.Before(interval).String()).Do(timedMessage, true, forceTimedMessage)
 	// Dinner
-	gocron.Every(1).Day().At(dinnerTime).Do(timedMessage, false, forceTimedMessage)
+	gocron.Every(1).Day().At(dinnerTime.Start.Before(interval).String()).Do(timedMessage, false, forceTimedMessage)
 
 	// api handler
 	http.HandleFunc("/webhook", cfg.webhook.ResponseHandler)
