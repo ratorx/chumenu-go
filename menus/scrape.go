@@ -23,10 +23,8 @@ func getRootNode(url string) (*html.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Check StatusCode and use maxRetries
 	defer res.Body.Close()
 
-	// TODO: Custom error for improper input
 	return html.Parse(res.Body)
 }
 
@@ -74,7 +72,7 @@ func parseMeal(node *html.Node) (Meal, error) {
 	items := scrape.FindAll(node, scrape.ByTag(atom.Li))
 
 	var meal Meal = make([]string, 0, len(items))
-	for i, _ := range items {
+	for i := range items {
 		if p := postProcessing(scrape.Text(items[i])); p != "" {
 			meal = append(meal, p)
 		}
