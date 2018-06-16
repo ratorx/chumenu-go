@@ -1,6 +1,3 @@
-# Exclude unit tests (for now)
-*_test.go
-
 # Server specific config
 env
 env/
