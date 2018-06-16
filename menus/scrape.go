@@ -21,7 +21,7 @@ const (
 func getRootNode(url string) (*html.Node, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	// TODO: Check StatusCode and use maxRetries
 	defer res.Body.Close()
