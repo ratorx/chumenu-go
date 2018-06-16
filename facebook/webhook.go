@@ -99,7 +99,8 @@ func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request
 	case "POST":
 		body, err := ioutil.ReadAll(request.Body)
 		if err != nil {
-			http.Error(res, "Request Body could not be parsed", http.StatusBadRequest)
+			http.Error(res, "Request body could not be parsed", http.StatusBadRequest)
+			w.Debug.Printf("Request body could not be parsed (Error: %s)", err)
 			return
 		}
 
@@ -111,6 +112,10 @@ func (w *Webhook) ResponseHandler(res http.ResponseWriter, request *http.Request
 		}
 		r := response{}
 		err = json.Unmarshal(body, &r)
+		if err != nil {
+			w.Debug.Printf("Invalid JSON received (Error: %s)", err)
+		}
+
 		for i := range r.Events {
 			go w.Handler.HandleEvent(r.Events[i].Messages)
 		}
