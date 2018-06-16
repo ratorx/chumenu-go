@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// GetData returns a Datablock which contains the menus for the provided weekday and the following day
 func GetData(weekday time.Weekday) (Datablock, error) {
 	table, err := getTable()
 	if err != nil {
@@ -42,6 +43,7 @@ func GetData(weekday time.Weekday) (Datablock, error) {
 	return ret, nil
 }
 
+// GetMenus returns a slice containing the menus for the entire week
 func GetMenus() ([]Menu, error) {
 	table, err := getTable()
 	if err != nil {
