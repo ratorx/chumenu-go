@@ -49,7 +49,7 @@ const (
 	*unsubscribe* - Unsubscribe from menu updates
 	*lunch* - Get the next lunch menu
 	*dinner* - Get the next the dinner menu"
-	*times* - Get kunch and dinner times`
+	*times* - Get lunch and dinner times`
 	unrecognised = "Command not recognised. Type *help* for a list of available commands."
 	unexpected   = "Unexpected Error. Will fix ASAP."
 )
