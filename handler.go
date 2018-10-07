@@ -44,12 +44,7 @@ const (
 	unsubscribeFail    = "Not currently subscribed."
 
 	// Other defaults
-	helpMessage = `Available commands:
-	*subscribe* - Receive regular menu updates
-	*unsubscribe* - Unsubscribe from menu updates
-	*lunch* - Get the next lunch menu
-	*dinner* - Get the next the dinner menu"
-	*times* - Get lunch and dinner times`
+	helpMessage  = "Available commands:\n*subscribe* - Receive regular menu updates\n*unsubscribe* - Unsubscribe from menu updates\n*lunch* - Get the next lunch menu\n*dinner* - Get the next the dinner menu\n*times* - Get lunch and dinner times"
 	unrecognised = "Command not recognised. Type *help* for a list of available commands."
 	unexpected   = "Unexpected Error. Will fix ASAP."
 )
