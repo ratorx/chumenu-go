@@ -44,21 +44,24 @@ const (
 	unsubscribeFail    = "Not currently subscribed."
 
 	// Other defaults
-	helpMessage  = "Available commands:\n*subscribe* - Receive regular menu updates\n*unsubscribe* - Unsubscribe from menu updates\n*lunch* - Get the next lunch menu\n*dinner* - Get the next the dinner menu"
+	helpMessage = `Available commands:
+	*subscribe* - Receive regular menu updates
+	*unsubscribe* - Unsubscribe from menu updates
+	*lunch* - Get the next lunch menu
+	*dinner* - Get the next the dinner menu"
+	*times* - Get kunch and dinner times`
 	unrecognised = "Command not recognised. Type *help* for a list of available commands."
 	unexpected   = "Unexpected Error. Will fix ASAP."
 )
 
 func responseMessage(r string, text string, qr []facebook.QuickReply) {
-	err := cfg.sendClient.SendMessage(r, text, facebook.Response, qr)
-	if err != nil {
+	if err := cfg.sendClient.SendMessage(r, text, facebook.Response, qr); err != nil {
 		cfg.debug.Print(err)
 	}
 }
 
 func subscriptionMessage(r string, text string, qr []facebook.QuickReply) {
-	err := cfg.sendClient.SendMessage(r, text, facebook.Subscription, qr)
-	if err != nil {
+	if err := cfg.sendClient.SendMessage(r, text, facebook.Subscription, qr); err != nil {
 		cfg.debug.Print(err)
 	}
 }
