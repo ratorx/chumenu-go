@@ -1,4 +1,4 @@
-# chumenu-go
+# chumenu-go [![Build Status](https://travis-ci.org/ratorx/chumenu-go.svg?branch=master)](https://travis-ci.org/ratorx/chumenu-go)
 A Go implementation of [chumenu](https://github.com/ratorx/chumenu).
 
 Status: Depolyed
