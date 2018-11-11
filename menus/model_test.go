@@ -1,6 +1,7 @@
 package menus
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ type mealTest struct {
 
 func mealCases() []mealTest {
 	return []mealTest{
-		mealTest{Meal{}, " - TBC"},
+		mealTest{Meal{}, emptyMeal},
 		mealTest{Meal{"one"}, " - one"},
 		mealTest{Meal{"one", "two"}, " - one\n - two"},
 	}
@@ -32,7 +33,7 @@ type menuTest struct {
 
 func menuCases() []menuTest {
 	return []menuTest{
-		menuTest{Menu{Meal{}, Meal{}}, "\nLunch:\n - TBC\nDinner:\n - TBC\n"},
+		menuTest{Menu{Meal{}, Meal{}}, fmt.Sprintf("\nLunch:\n%s\nDinner:\n%s\n", emptyMeal, emptyMeal)},
 	}
 }
 

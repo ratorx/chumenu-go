@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const emptyMealString = " - To Be Confirmed"
+const emptyMeal = " - To Be Confirmed"
 
 // Meal represents a list of food items
 type Meal []string
@@ -13,7 +13,7 @@ type Meal []string
 func (m Meal) String() string {
 	// fmt.Println()
 	if len(m) == 0 {
-		return emptyMealString
+		return emptyMeal
 	}
 
 	return fmt.Sprintf(" - %s", strings.Join(m, "\n - "))
