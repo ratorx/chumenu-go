@@ -5,13 +5,15 @@ import (
 	"strings"
 )
 
+const emptyMealString = " - To Be Confirmed"
+
 // Meal represents a list of food items
 type Meal []string
 
 func (m Meal) String() string {
 	// fmt.Println()
 	if len(m) == 0 {
-		return " - TBC"
+		return emptyMealString
 	}
 
 	return fmt.Sprintf(" - %s", strings.Join(m, "\n - "))

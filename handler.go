@@ -159,7 +159,7 @@ func menuMessage(r string, isLunch bool) {
 func timedMessage(isLunch, forceSend bool) {
 	prefix, meal := getMenu(isLunch)
 
-	if !forceSend && meal.String() == " - TBC" {
+	if !forceSend && len(meal) == 0 {
 		cfg.debug.Print("data unavailable for timed message")
 		return
 	}
