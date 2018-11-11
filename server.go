@@ -42,12 +42,11 @@ var cfg config
 
 // Config values with default initialiser
 func getConfigValue(env string, def string) string {
-	value, success := os.LookupEnv(env)
-	if !success {
-		return def
+	if value, success := os.LookupEnv(env); success {
+		return value
 	}
 
-	return value
+	return def
 }
 
 // Initialiser for default port
@@ -68,7 +67,7 @@ func init() {
 	cfg.certPath = getConfigValue("SSL_CERT_PATH", "")
 	cfg.keyPath = getConfigValue("SSL_KEY_PATH", "")
 	cfg.userBucket = getConfigValue("USER_BUCKET", defaultUserBucket)
-	cfg.port = getPort("PORT", 0)
+	cfg.port = getPort("PORT", 8080)
 
 	// Initialiser variables for other Config members
 	accessToken := getConfigValue("FACEBOOK_ACCESS_TOKEN", "")
