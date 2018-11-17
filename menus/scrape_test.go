@@ -14,17 +14,20 @@ type postProcessingTest struct {
 func postProcessingCases() []postProcessingTest {
 	return []postProcessingTest{
 		// Invalid item tests
-		postProcessingTest{"\xa0\n", ""},
-		postProcessingTest{"  asdf\xa0\n", "asdf"},
+		{"\xa0\n", ""},
+		{"  asdf\xa0\n", "asdf"},
 		// TBC tests
-		postProcessingTest{"TBC", ""},
-		postProcessingTest{"To be Confirmed", ""},
-		postProcessingTest{"To be confirmed \n", ""},
-		postProcessingTest{"to Be cONFIRmED", ""},
+		{"TBC", ""},
+		{"To be Confirmed", ""},
+		{"To be confirmed \n", ""},
+		{"to Be cONFIRmED", ""},
 		// Fish of the Day tests
-		postProcessingTest{"Fish of the Day", "Fish of the Day"},
-		postProcessingTest{"FoD", "Fish of the Day"},
-		postProcessingTest{"fIsh OF ThE DAy", "Fish of the Day"},
+		{"Fish of the Day", "Fish of the Day"},
+		{"FoD", "Fish of the Day"},
+		{"fIsh OF ThE DAy", "Fish of the Day"},
+		// No post processing tests
+		{"Beef Steak", "Beef Steak"},
+		{"SoME WEIrd fOOd", "SoME WEIrd fOOd"},
 	}
 }
 

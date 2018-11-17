@@ -55,15 +55,15 @@ func getTable() (*html.Node, error) {
 
 func postProcessing(item string) string {
 	item = strings.Trim(item, "\xa0 \n\t")
-	item = strings.ToLower(item)
+	item_lower := strings.ToLower(item)
 
 	// Detect TBC
-	if item == "tbc" || item == "to be confirmed" {
+	if item_lower == "tbc" || item_lower == "to be confirmed" {
 		return ""
 	}
 
 	// Correct Fish of the Day
-	if item == "fod" || item == "fish of the day" {
+	if item_lower == "fod" || item_lower == "fish of the day" {
 		return "Fish of the Day"
 	}
 
